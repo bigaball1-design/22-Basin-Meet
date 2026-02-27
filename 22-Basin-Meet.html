@@ -3,54 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Empire Basin 2.7 | Executive Management</title>
+    <title>Empire Basin 2.8 | Executive Control</title>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
     <style>
         :root { 
-            --bg: #0a0a0a; --card: #151515; --text: #d1d1d1; --dim: #666;
+            --bg: #050505; --card: #121212; --text: #d1d1d1; --dim: #666;
             --primary: #80cbc4; --accent: #ce93d8; --orange: #ffcc80; --border: #222;
-            --blue: #90caf9; --green: #a5d6a7; --purple: #b39ddb;
+            --blue: #90caf9; --green: #a5d6a7; --pink: #f48fb1; --yellow: #fff59d;
         }
-        body { font-family: 'Kanit', sans-serif; background: var(--bg); margin: 0; color: var(--text); }
-        
-        /* Navigation */
+        body { font-family: 'Kanit', sans-serif; background: var(--bg); margin: 0; color: var(--text); font-size: 13px; }
         .nav-bar { display: flex; background: #000; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
-        .nav-item { padding: 15px 25px; cursor: pointer; color: var(--dim); border-bottom: 3px solid transparent; font-size: 13px; font-weight: 600; text-transform: uppercase; }
+        .nav-item { padding: 15px 25px; cursor: pointer; color: var(--dim); border-bottom: 3px solid transparent; font-weight: 600; text-transform: uppercase; }
         .nav-item.active { border-color: var(--primary); color: var(--primary); background: rgba(128,203,196,0.05); }
-
         .container { padding: 20px; max-width: 1600px; margin: 0 auto; }
         .tab-content { display: none; } .tab-content.active { display: block; }
 
-        /* Section Headers */
-        .section-header { font-size: 24px; color: var(--primary); margin: 20px 0; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
+        /* Color Labels */
+        .color-legend { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; background: #111; padding: 10px; border-radius: 8px; }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+        .dot { width: 12px; height: 12px; border-radius: 3px; }
 
-        /* Basin Console - Grid Layout */
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+        .section-header { font-size: 22px; color: var(--primary); margin: 30px 0 15px 0; border-left: 4px solid var(--primary); padding-left: 15px; }
+
+        /* Basin Card Update */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
         .basin-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 25px; cursor: pointer; transition: 0.3s; position: relative; }
         .basin-card:hover { border-color: var(--primary); transform: translateY(-5px); }
-        .basin-card h2 { font-size: 28px; color: var(--primary); margin: 0 0 10px 0; font-family: 'JetBrains Mono'; }
+        .basin-card h2 { font-size: 28px; color: var(--primary); margin: 0 0 12px 0; font-family: 'JetBrains Mono'; }
         
-        .type-label { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-bottom: 10px; color: #000; }
-        .status-badge { font-size: 14px; padding: 5px 12px; border-radius: 6px; font-weight: 600; border: 1px solid; margin-top: 15px; display: inline-block; }
-        
-        .st-upcoming { color: var(--orange); border-color: var(--orange); background: rgba(255,204,128,0.05); }
-        .st-finished { color: var(--green); border-color: var(--green); background: rgba(165,214,167,0.05); }
+        .type-badge { position: absolute; top: 15px; right: 15px; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; color: #000; }
+        .fee-info { margin: 15px 0; font-size: 18px; font-weight: 700; font-family: 'JetBrains Mono'; color: var(--orange); }
+        .status-badge { display: inline-block; padding: 5px 12px; border-radius: 6px; font-weight: 700; border: 1px solid; margin-top: 10px; }
+        .st-up { color: var(--orange); border-color: var(--orange); }
+        .st-done { color: var(--green); border-color: var(--green); }
 
-        /* Progress Grid - 2 Columns */
-        .progress-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .p-row { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px 20px; display: grid; grid-template-columns: 160px 1fr 60px; align-items: center; gap: 15px; }
-        .p-name { font-size: 15px; font-weight: 600; color: var(--primary); }
+        /* Progress 2 Columns */
+        .p-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .p-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px 20px; display: grid; grid-template-columns: 150px 1fr 60px; align-items: center; gap: 15px; cursor: pointer; }
         .bar-bg { height: 8px; background: #222; border-radius: 4px; overflow: hidden; }
         .bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--primary)); transition: 1s; }
 
-        /* Modal Summary */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; padding: 20px; overflow-y: auto; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; padding: 20px; }
         .modal-content { background: var(--card); max-width: 800px; margin: 20px auto; padding: 40px; border-radius: 15px; border: 1px solid var(--border); }
-        .fee-tag { font-size: 20px; font-weight: 700; font-family: 'JetBrains Mono'; margin: 15px 0; }
-
-        #calendar { background: #000; padding: 20px; border-radius: 12px; border: 1px solid var(--border); }
-        @media (max-width: 1000px) { .progress-grid { grid-template-columns: 1fr; } }
+        #calendar { background: #000; padding: 15px; border-radius: 12px; border: 1px solid var(--border); }
+        @media (max-width: 1000px) { .p-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -58,21 +55,28 @@
     <div class="nav-bar">
         <div class="nav-item active" onclick="switchTab('main', this)">Basin Console</div>
         <div class="nav-item" onclick="switchTab('progress', this)">Progress Tracker</div>
-        <div class="nav-item" onclick="switchTab('cal', this)">Calendar View</div>
+        <div class="nav-item" onclick="switchTab('cal', this)">Calendar</div>
     </div>
 
     <div class="container">
+        <div class="color-legend">
+            <div class="legend-item"><div class="dot" style="background:var(--blue)"></div> Inception</div>
+            <div class="legend-item"><div class="dot" style="background:var(--green)"></div> ปฐมนิเทศ</div>
+            <div class="legend-item"><div class="dot" style="background:var(--orange)"></div> กลุ่มย่อย</div>
+            <div class="legend-item"><div class="dot" style="background:var(--pink)"></div> ปัจฉิม/ประชุมใหญ่</div>
+            <div class="legend-item"><div class="dot" style="background:var(--accent)"></div> Final</div>
+        </div>
+
         <div id="tab-main" class="tab-content active">
-            <div class="section-header">📅 การประชุมที่กำลังจะมาถึง (Upcoming)</div>
-            <div id="grid-upcoming" class="grid"></div>
-            <div style="margin: 50px 0; border-top: 1px dashed #444;"></div>
-            <div class="section-header">✅ ประชุมเสร็จสิ้นแล้ว (Historical)</div>
-            <div id="grid-finished" class="grid" style="opacity: 0.7;"></div>
+            <div class="section-header">🚩 การประชุมที่กำลังมาถึง (Upcoming Meetings)</div>
+            <div id="grid-up" class="grid"></div>
+            <div style="margin: 60px 0; border-top: 1px dashed #333;"></div>
+            <div class="section-header">✅ การประชุมที่เสร็จสิ้น (History Log)</div>
+            <div id="grid-done" class="grid" style="opacity: 0.6;"></div>
         </div>
 
         <div id="tab-progress" class="tab-content">
-            <div class="section-header">📊 ความคืบหน้า 22 ลุ่มน้ำ</div>
-            <div id="p-list" class="progress-grid"></div>
+            <div id="p-list" class="p-grid"></div>
         </div>
 
         <div id="tab-cal" class="tab-content">
@@ -86,19 +90,17 @@
     const LOG_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5hALcSBPp06GcYUqubUzlQM6_spndAbjd4nuhA9ekKFGkA8gldNXj1frx3gjn-6Tg0eS-HuAI9bUw/pub?gid=0&single=true&output=csv';
     const PROF_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5hALcSBPp06GcYUqubUzlQM6_spndAbjd4nuhA9ekKFGkA8gldNXj1frx3gjn-6Tg0eS-HuAI9bUw/pub?gid=1235957743&single=true&output=csv';
     
-    const TYPE_COLORS = { "Inception": "#90caf9", "ปฐมนิเทศ": "#a5d6a7", "กลุ่มย่อย": "#ffcc80", "Final": "#ce93d8" };
+    const TYPE_MAP = { "Inception": "var(--blue)", "เวทีปฐมนิเทศ": "var(--green)", "กลุ่มย่อย": "var(--orange)", "ปัจฉิม": "var(--pink)", "Final": "var(--accent)" };
     const STEPS = ["Inception", "Progress", "Interim", "Progress 2", "Draft Final", "Final"];
     let db = { profiles: {}, logs: [] };
 
     function parseDate(dStr) {
         if (!dStr) return null;
-        const parts = dStr.trim().split('/');
-        if (parts.length === 3) return new Date(`${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`);
-        const iso = new Date(dStr.trim());
-        return isNaN(iso.getTime()) ? null : iso;
+        const p = dStr.trim().split('/');
+        return p.length === 3 ? new Date(`${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`) : new Date(dStr);
     }
 
-    async function start() {
+    async function load() {
         try {
             const [pRes, lRes] = await Promise.all([fetch(PROF_URL), fetch(LOG_URL)]);
             const pTxt = await pRes.text();
@@ -109,21 +111,81 @@
             const lTxt = await lRes.text();
             db.logs = lTxt.split('\n').map(r => r.split(',').map(s => s.trim())).filter((c, i) => i > 0 && c[3]);
             render();
-        } catch (e) { console.error("Sync Error", e); }
+        } catch (e) { console.error("Data Load Error", e); }
     }
 
     function render() {
         const now = new Date();
-        const upGrid = document.getElementById('grid-upcoming');
-        const finGrid = document.getElementById('grid-finished');
-        upGrid.innerHTML = ''; finGrid.innerHTML = '';
+        now.setHours(0,0,0,0);
+        const upGrid = document.getElementById('grid-up');
+        const doneGrid = document.getElementById('grid-done');
+        upGrid.innerHTML = ''; doneGrid.innerHTML = '';
 
-        const uniqueBasins = [...new Set(db.logs.map(l => l[3]))];
-        const basinData = uniqueBasins.map(nick => {
+        const nicks = [...new Set(db.logs.map(l => l[3]))];
+        const basinAgg = nicks.map(nick => {
             const logs = db.logs.filter(l => l[3] === nick).map(l => ({...l, dt: parseDate(l[4])})).filter(l => l.dt);
-            const next = logs.sort((a,b) => a.dt - b.dt).find(l => l.dt >= now.setHours(0,0,0,0)) || logs[logs.length-1];
+            const sorted = logs.sort((a,b) => a.dt - b.dt);
+            const next = sorted.find(l => l.dt >= now) || sorted[sorted.length-1];
             return { nick, next };
         });
 
-        // 1. Render Console Cards
-        basinData.sort((a,b) => (a.next?.dt || 0) - (b.next?.dt ||
+        basinAgg.sort((a,b) => (a.next?.dt || 0) - (b.next?.dt || 0)).forEach(b => {
+            const isDone = b.next.dt < now;
+            const feeVal = b.next[7] === "" ? "รอรับเบี้ย" : (parseFloat(b.next[7]) === 0 ? "ไม่มีเบี้ย" : "฿" + parseFloat(b.next[7]).toLocaleString());
+            const card = `
+                <div class="basin-card" onclick="openSummary('${b.nick}')">
+                    <span class="type-badge" style="background:${TYPE_MAP[b.next[1]] || '#444'}">${b.next[1]}</span>
+                    <h2>${b.nick}</h2>
+                    <div style="font-size:16px;">🗓 ${b.next[4]} | ⏰ ${b.next[5]}</div>
+                    <div class="fee-info">${feeVal}</div>
+                    <div class="status-badge ${isDone?'st-done':'st-up'}">${isDone?'การประชุมเสร็จสิ้น':'กำลังมาถึง'}</div>
+                </div>`;
+            isDone ? doneGrid.innerHTML += card : upGrid.innerHTML += card;
+        });
+
+        const plist = document.getElementById('p-list'); plist.innerHTML = '';
+        Object.keys(db.profiles).forEach(nick => {
+            const l = db.logs.filter(log => log[3] === nick);
+            let max = 0; l.forEach(log => { const i = STEPS.indexOf(log[1].trim()); if(i >= max) max = i + 1; });
+            plist.innerHTML += `<div class="p-card" onclick="openSummary('${nick}')">
+                <div class="p-name">${nick}</div>
+                <div class="bar-bg"><div class="bar-fill" style="width:${(max/6)*100}%"></div></div>
+                <div style="font-size:12px; color:#666;">${max}/6</div>
+            </div>`;
+        });
+    }
+
+    function openSummary(nick) {
+        const p = db.profiles[nick] || {};
+        const logs = db.logs.filter(l => l[3] === nick);
+        const lastFee = [...logs].reverse().find(l => l[7] !== "") || {7:""};
+        const feeDisp = lastFee[7] === "" ? "รอรับเบี้ย" : (parseFloat(lastFee[7]) === 0 ? "ไม่มีเบี้ย" : "฿" + parseFloat(lastFee[7]).toLocaleString());
+
+        document.getElementById('m-body').innerHTML = `
+            <h1 style="color:var(--primary); font-size:32px; margin:0;">${nick}</h1>
+            <p style="font-size:18px; color:#fff; margin:10px 0; border-left:4px solid var(--accent); padding-left:15px;">${p.full || '-'}</p>
+            <p style="color:var(--dim)">ที่ปรึกษา: ${p.company || '-'}</p>
+            <div style="font-size:24px; color:var(--orange); font-family:JetBrains Mono; margin-top:20px;">สถานะเบี้ย: ${feeDisp}</div>
+            <a href="${p.link}" target="_blank" style="display:inline-block; margin-top:20px; color:var(--blue); font-weight:600;">📄 เปิดเอกสารประกอบโครงการ</a>
+        `;
+        document.getElementById('modal').style.display = 'block';
+    }
+
+    function switchTab(t, el) {
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        document.getElementById('tab-'+t).classList.add('active'); el.classList.add('active');
+        if (t === 'cal') setTimeout(initCal, 50);
+    }
+
+    function initCal() {
+        const events = db.logs.map(l => {
+            const d = parseDate(l[4]);
+            return d ? { title: `${l[5]} - ${l[3]}`, start: d.toISOString().split('T')[0], color: TYPE_MAP[l[1]] || '#444' } : null;
+        }).filter(e => e);
+        new FullCalendar.Calendar(document.getElementById('calendar'), { initialView: 'dayGridMonth', events, locale: 'th', height: 650 }).render();
+    }
+    load();
+</script>
+</body>
+</html>

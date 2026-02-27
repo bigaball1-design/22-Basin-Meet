@@ -3,16 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Empire Basin 2.5 | Stable View</title>
+    <title>Empire Basin 2.6 | Executive View</title>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
     <style>
         :root { 
-            --bg: #0a0a0a; --card: #151515; --text: #d1d1d1; --dim: #777;
-            --primary: #80cbc4; /* Pastel Teal */
-            --accent: #ce93d8; /* Pastel Purple */
-            --orange: #ffcc80; /* Pastel Orange */
-            --border: #222; 
+            --bg: #0a0a0a; --card: #151515; --text: #d1d1d1; --dim: #666;
+            --primary: #80cbc4; --accent: #ce93d8; --orange: #ffcc80; --border: #222; 
         }
         body { font-family: 'Kanit', sans-serif; background: var(--bg); margin: 0; color: var(--text); font-size: 13px; }
         .nav-bar { display: flex; background: #000; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
@@ -21,25 +18,24 @@
         .container { padding: 15px; max-width: 1600px; margin: 0 auto; }
         .tab-content { display: none; } .tab-content.active { display: block; }
 
-        /* Console Grid - Compact */
+        /* Console Grid */
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
         .basin-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 15px; cursor: pointer; transition: 0.2s; }
-        .basin-card:hover { border-color: var(--primary); transform: translateY(-2px); }
         .basin-card h2 { font-size: 20px; color: var(--primary); margin: 0 0 8px 0; font-family: 'JetBrains Mono'; }
         
-        /* Progress Grid - 2 Columns (Compact) */
-        .progress-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .p-row { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; display: grid; grid-template-columns: 140px 1fr 45px; align-items: center; gap: 10px; }
-        .p-name { font-size: 13px; font-weight: 600; color: var(--primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        /* Progress Grid - 2 Columns Compact */
+        .progress-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .p-row { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 6px 12px; display: grid; grid-template-columns: 120px 1fr 40px; align-items: center; gap: 10px; }
+        .p-name { font-size: 12px; font-weight: 600; color: var(--primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .bar-bg { height: 6px; background: #222; border-radius: 3px; overflow: hidden; }
         .bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--primary)); transition: 1s; }
         .p-step { font-size: 10px; color: var(--dim); text-align: right; }
 
-        .status-tag { font-size: 11px; padding: 2px 6px; border-radius: 4px; display: inline-block; font-weight: 600; border: 1px solid; }
+        .st-tag { font-size: 11px; padding: 2px 6px; border-radius: 4px; display: inline-block; font-weight: 600; border: 1px solid; margin-top: 5px; }
         .st-up { color: var(--orange); border-color: var(--orange); }
         .st-done { color: var(--primary); border-color: var(--primary); }
 
-        #calendar { background: #000; padding: 10px; border-radius: 8px; border: 1px solid var(--border); font-size: 12px; }
+        #calendar { background: #000; padding: 10px; border-radius: 8px; border: 1px solid var(--border); }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; padding: 15px; overflow-y: auto; }
         .modal-content { background: var(--card); max-width: 700px; margin: 20px auto; padding: 25px; border-radius: 10px; border: 1px solid var(--border); }
         @media (max-width: 900px) { .progress-grid { grid-template-columns: 1fr; } }
@@ -48,8 +44,8 @@
 <body>
     <div class="nav-bar">
         <div class="nav-item active" onclick="switchTab('main', this)">Basin Console</div>
-        <div class="nav-item" onclick="switchTab('progress', this)">Progress Tracker</div>
-        <div class="nav-item" onclick="switchTab('cal', this)">Calendar</div>
+        <div class="nav-item" onclick="switchTab('progress', this)">Progress Analysis</div>
+        <div class="nav-item" onclick="switchTab('cal', this)">Calendar View</div>
     </div>
     <div class="container">
         <div id="tab-main" class="tab-content active"><div id="main-grid" class="grid"></div></div>
@@ -64,7 +60,6 @@
     const STEPS = ["Inception", "Progress", "Interim", "Progress 2", "Draft Final", "Final"];
     let db = { profiles: {}, logs: [] };
 
-    // Smart Date Parser: รองรับทั้ง 16/1/2026 และ 2026-01-16
     function safeParseDate(dStr) {
         if (!dStr) return null;
         let d = dStr.trim();
@@ -86,51 +81,50 @@
                 if (c[0]) db.profiles[c[0]] = { fullName: c[1]||'', company: c[2]||'', staff: c[3]||'', link: c[4]||'#' };
             });
             const lTxt = await lRes.text();
-            db.logs = lTxt.split('\n').map(r => r.split(',').map(s => s.trim())).filter((c, i) => i > 0 && c[4]);
+            // คอลัมน์ Nick_Name ในชีท 1 อยู่ที่ Index 3 (คอลัมน์ D)
+            db.logs = lTxt.split('\n').map(r => r.split(',').map(s => s.trim())).filter((c, i) => i > 0 && c[3]);
             render();
         } catch (e) { console.error("Sync Error", e); }
     }
 
     function render() {
         const now = new Date();
-        // 1. Console Grid
         const grid = document.getElementById('main-grid'); grid.innerHTML = '';
-        const uniqueBasins = [...new Set(db.logs.map(l => l[4]))]; // Use nick_name column
+        const uniqueNicks = [...new Set(db.logs.map(l => l[3]))];
         
-        uniqueBasins.forEach(name => {
-            const bLogs = db.logs.filter(l => l[4] === name).map(l => ({...l, dt: safeParseDate(l[5])})).filter(l => l.dt);
+        uniqueNicks.forEach(nick => {
+            const bLogs = db.logs.filter(l => l[3] === nick).map(l => ({...l, dt: safeParseDate(l[4])})).filter(l => l.dt);
             if (bLogs.length === 0) return;
             const next = bLogs.sort((a,b) => a.dt - b.dt).find(l => l.dt > now) || bLogs[bLogs.length-1];
             const isDone = next.dt <= now;
-            grid.innerHTML += `<div class="basin-card" onclick="openDetails('${name}')">
-                <h2>${name}</h2>
-                <div class="status-tag ${isDone?'st-done':'st-up'}">${isDone?'ประชุมเสร็จสิ้น':'นัดหมาย: '+next[5]}</div>
-                <div style="font-size:11px; color:#666; margin-top:8px;">ล่าสุด: ${next[3]}</div>
+            grid.innerHTML += `<div class="basin-card" onclick="openDetails('${nick}')">
+                <h2>${nick}</h2>
+                <div class="st-tag ${isDone?'st-done':'st-up'}">${isDone?'ประชุมเสร็จสิ้น':'นัดหมาย: '+next[4]}</div>
+                <div style="font-size:11px; color:#555; margin-top:8px;">กิจกรรมล่าสุด: ${next[2]}</div>
             </div>`;
         });
 
-        // 2. Progress Tracker (2-Column Grid)
         const plist = document.getElementById('p-list'); plist.innerHTML = '';
-        Object.keys(db.profiles).forEach(name => {
-            const bLogs = db.logs.filter(l => l[4] === name);
-            let max = 0; bLogs.forEach(l => { const i = STEPS.indexOf(l[3].trim()); if(i >= max) max = i + 1; });
+        Object.keys(db.profiles).forEach(nick => {
+            const bLogs = db.logs.filter(l => l[3] === nick);
+            let max = 0; bLogs.forEach(l => { const i = STEPS.indexOf(l[1].trim()); if(i >= max) max = i + 1; });
             plist.innerHTML += `<div class="p-row">
-                <div class="p-name">${name}</div>
+                <div class="p-name">${nick}</div>
                 <div class="bar-bg"><div class="bar-fill" style="width:${(max/6)*100}%"></div></div>
                 <div class="p-step">${max}/6</div>
             </div>`;
         });
     }
 
-    function openDetails(name) {
-        const p = db.profiles[name] || {};
-        const bLogs = db.logs.filter(l => l[4] === name).reverse();
-        let html = `<h1 style="color:var(--primary); font-size:22px; margin:0;">${name}</h1><p style="font-size:14px; color:#aaa;">${p.fullName}</p><hr style="border:1px solid #222; margin:15px 0;">`;
+    function openDetails(nick) {
+        const p = db.profiles[nick] || {};
+        const bLogs = db.logs.filter(l => l[3] === nick).reverse();
+        let html = `<h1 style="color:var(--primary); font-size:20px; margin:0;">${nick}</h1><p style="font-size:13px; color:#888;">${p.fullName}</p><hr style="border:1px solid #222; margin:15px 0;">`;
         bLogs.forEach(l => {
-            const fee = l[8] ? parseFloat(l[8].replace(/[^0-9.]/g,'')) : null;
+            const fee = l[7] ? parseFloat(l[7].replace(/[^0-9.]/g,'')) : null;
             html += `<div style="margin-bottom:12px; border-left:2px solid #333; padding-left:12px;">
-                <b style="font-size:14px;">${l[3]}</b> (${l[5]})<br>
-                <span style="color:${fee > 0 ? 'var(--primary)':'var(--orange)'}; font-size:12px;">${fee > 0 ? '฿'+(fee/2).toLocaleString() : (fee === 0 ? 'ไม่มีเบี้ย' : 'รอรับเบี้ย')}</span>
+                <b style="font-size:13px;">${l[1]}</b> (${l[4]})<br>
+                <span style="color:${fee > 0 ? 'var(--primary)':'var(--orange)'}; font-size:11px;">${fee > 0 ? '฿'+(fee/2).toLocaleString() : (fee === 0 ? 'ไม่มีเบี้ย' : 'รอรับเบี้ย')}</span>
             </div>`;
         });
         document.getElementById('m-body').innerHTML = html; document.getElementById('modal').style.display = 'block';
@@ -145,8 +139,8 @@
 
     function initCal() {
         const ev = db.logs.map(l => {
-            const d = safeParseDate(l[5]);
-            return d ? { title: l[4], start: d.toISOString().split('T')[0], color: d < new Date() ? '#333' : '#ce93d8' } : null;
+            const d = safeParseDate(l[4]);
+            return d ? { title: l[3], start: d.toISOString().split('T')[0], color: d < new Date() ? '#333' : '#ce93d8' } : null;
         }).filter(e => e);
         new FullCalendar.Calendar(document.getElementById('calendar'), { initialView: 'dayGridMonth', events: ev, locale: 'th', height: 600 }).render();
     }

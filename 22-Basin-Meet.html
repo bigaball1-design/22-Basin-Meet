@@ -133,7 +133,28 @@
         }).sort((a,b) => (a.next?.dt || 0) - (b.next?.dt || 0));
 
         basinAgg.forEach(b => {
+            // 1. เพิ่มบรรทัดคำนวณ 30 วันย้อนหลังไว้ตรงนี้
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(now.getDate() - 30);
+
+        basinAgg.forEach(b => {
             const isDone = b.next.dt < now;
+
+            // 2. เพิ่มเงื่อนไข Filter: ถ้าจบแล้วและเก่าเกิน 30 วัน ให้ข้ามไปเลย
+            if (isDone && b.next.dt < thirtyDaysAgo) return;
+
+            const rawFee = b.next[7].replace(/,/g, '');
+            const feeTxt = b.next[7] === "" ? "รอรับเบี้ย" : (parseFloat(rawFee) === 0 ? "ไม่มีเบี้ย" : "฿" + parseFloat(rawFee).toLocaleString());
+            
+            const card = `<div class="basin-card" onclick="openSummary('${b.nick}')">
+                <span class="type-badge" style="background:${TYPE_MAP[b.next[1]] || '#444'}">${b.next[1]}</span>
+                <h2>${b.nick}</h2><div style="font-size:16px;">🗓 ${b.next[4]} | ⏰ ${b.next[5]}</div>
+                <div class="fee-info">เบี้ยรอบนี้: ${feeTxt}</div>
+                <div class="staff-info">👥 ผู้รับผิดชอบ: ${b.next[6] || 'ไม่ระบุ'}</div>
+                <div class="status-badge ${isDone?'st-done':'st-up'}">${isDone?'เสร็จสิ้น':'กำลังมาถึง'}</div></div>`;
+            
+            isDone ? doneG.innerHTML += card : upG.innerHTML += card;
+        });
             const rawFee = b.next[7].replace(/,/g, '');
             const feeTxt = b.next[7] === "" ? "รอรับเบี้ย" : (parseFloat(rawFee) === 0 ? "ไม่มีเบี้ย" : "฿" + parseFloat(rawFee).toLocaleString());
             
@@ -190,3 +211,4 @@
 </script>
 </body>
 </html>
+

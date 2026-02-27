@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Empire Basin 3.0 | Master Edition</title>
+    <title>Empire Basin 3.0 | Master Final</title>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
     <style>
         :root { 
-            --bg: #050505; --card: #121212; --text: #d1d1d1; --dim: #555;
+            --bg: #050505; --card: #121212; --text: #d1d1d1; --dim: #666;
             --primary: #80cbc4; --accent: #ce93d8; --orange: #ffcc80; --border: #222;
             --blue: #90caf9; --green: #a5d6a7; --pink: #f48fb1; --yellow: #fff59d;
         }
@@ -19,39 +19,37 @@
         .container { padding: 20px; max-width: 1600px; margin: 0 auto; }
         .tab-content { display: none; } .tab-content.active { display: block; }
 
-        /* Master Color Legend */
         .legend { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; background: #111; padding: 12px; border-radius: 8px; border: 1px solid var(--border); }
         .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; }
         .dot { width: 10px; height: 10px; border-radius: 2px; }
 
         .section-header { font-size: 22px; color: var(--primary); margin: 30px 0 15px 0; border-left: 4px solid var(--primary); padding-left: 15px; }
 
-        /* Basin Card */
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 20px; }
         .basin-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 25px; cursor: pointer; transition: 0.3s; position: relative; }
         .basin-card:hover { border-color: var(--primary); transform: translateY(-5px); }
         .basin-card h2 { font-size: 28px; color: var(--primary); margin: 0 0 12px 0; font-family: 'JetBrains Mono'; }
         
         .type-badge { position: absolute; top: 15px; right: 15px; padding: 3px 10px; border-radius: 4px; font-size: 10px; font-weight: 700; color: #000; }
-        .staff-info { font-size: 12px; color: #ffffff; margin: 10px 0; }
+        .fee-info { margin: 12px 0; font-size: 18px; font-weight: 700; font-family: 'JetBrains Mono'; color: var(--orange); }
+        .staff-info { font-size: 12px; color: #ffffff; margin-bottom: 10px; }
         .status-badge { display: inline-block; padding: 4px 12px; border-radius: 6px; font-weight: 700; border: 1px solid; margin-top: 5px; }
         .st-up { color: var(--orange); border-color: var(--orange); }
         .st-done { color: var(--green); border-color: var(--green); }
 
-        /* Progress Grid */
         .p-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .p-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 20px; display: grid; grid-template-columns: 140px 1fr 50px; align-items: center; gap: 15px; cursor: pointer; }
         .bar-bg { height: 6px; background: #222; border-radius: 3px; overflow: hidden; }
         .bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--primary)); transition: 1s; }
 
-        /* Modal Summary */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; padding: 20px; overflow-y: auto; }
         .modal-content { background: var(--card); max-width: 800px; margin: 20px auto; padding: 40px; border-radius: 15px; border: 1px solid var(--border); }
         .history-item { border-left: 2px solid var(--border); padding-left: 20px; position: relative; margin-bottom: 25px; }
         .fee-ledger { font-family: 'JetBrains Mono'; font-size: 18px; font-weight: 700; margin-top: 8px; display: block; }
         
         #calendar { background: #000; padding: 15px; border-radius: 12px; border: 1px solid var(--border); color: #fff; }
-        .fc-event-title::before { content: '●'; margin-right: 5px; }
+        .fc-event { border: none !important; border-radius: 4px !important; padding: 2px 4px !important; }
+        .fc-event-title { font-weight: 600 !important; color: #000 !important; }
 
         @media (max-width: 1000px) { .p-grid { grid-template-columns: 1fr; } }
     </style>
@@ -64,7 +62,6 @@
     </div>
     <div class="container">
         <div class="legend" id="legend-box"></div>
-
         <div id="tab-main" class="tab-content active">
             <div class="section-header">🚩 กำลังมาถึง (Upcoming)</div><div id="grid-up" class="grid"></div>
             <div style="margin: 50px 0; border-top: 1px dashed #333;"></div>
@@ -79,7 +76,6 @@
     const LOG_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5hALcSBPp06GcYUqubUzlQM6_spndAbjd4nuhA9ekKFGkA8gldNXj1frx3gjn-6Tg0eS-HuAI9bUw/pub?gid=0&single=true&output=csv';
     const PROF_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5hALcSBPp06GcYUqubUzlQM6_spndAbjd4nuhA9ekKFGkA8gldNXj1frx3gjn-6Tg0eS-HuAI9bUw/pub?gid=1235957743&single=true&output=csv';
     
-    // Master Mapping: สีและลำดับความคืบหน้า
     const TYPE_MAP = {
         "Inception": "var(--blue)",
         "Progress Report 1": "var(--blue)",
@@ -137,9 +133,13 @@
 
         basinAgg.forEach(b => {
             const isDone = b.next.dt < now;
+            const rawFee = b.next[7].replace(/,/g, '');
+            const feeTxt = b.next[7] === "" ? "รอรับเบี้ย" : (parseFloat(rawFee) === 0 ? "ไม่มีเบี้ย" : "฿" + parseFloat(rawFee).toLocaleString());
+            
             const card = `<div class="basin-card" onclick="openSummary('${b.nick}')">
                 <span class="type-badge" style="background:${TYPE_MAP[b.next[1]] || '#444'}">${b.next[1]}</span>
                 <h2>${b.nick}</h2><div style="font-size:16px;">🗓 ${b.next[4]} | ⏰ ${b.next[5]}</div>
+                <div class="fee-info">เบี้ยรอบนี้: ${feeTxt}</div>
                 <div class="staff-info">👥 ผู้รับผิดชอบ: ${b.next[6] || 'ไม่ระบุ'}</div>
                 <div class="status-badge ${isDone?'st-done':'st-up'}">${isDone?'เสร็จสิ้น':'กำลังมาถึง'}</div></div>`;
             isDone ? doneG.innerHTML += card : upG.innerHTML += card;
@@ -158,28 +158,14 @@
     function openSummary(nick) {
         const p = db.profiles[nick] || {};
         const logs = db.logs.filter(l => l[3] === nick).reverse();
-        
         let ledgerH = '';
         logs.forEach(l => {
             const rawFee = l[7].replace(/,/g, '');
             const feeTxt = l[7] === "" ? "รอรับเบี้ย" : (parseFloat(rawFee) === 0 ? "ไม่มีเบี้ย" : "฿" + parseFloat(rawFee).toLocaleString());
             const feeClr = l[7] === "" ? "var(--orange)" : (parseFloat(rawFee) === 0 ? "var(--dim)" : "var(--primary)");
-            
-            ledgerH += `<div class="history-item">
-                <div style="font-size:15px; font-weight:600;">${l[1]} <span style="font-size:12px; color:var(--dim)">(${l[4]})</span></div>
-                <span class="fee-ledger" style="color:${feeClr}">${feeTxt}</span>
-                <div style="font-size:12px; color:#999; margin-top:4px;">👥 ${l[6] || ''}</div>
-            </div>`;
+            ledgerH += `<div class="history-item"><div style="font-size:15px; font-weight:600;">${l[1]} (${l[4]})</div><span class="fee-ledger" style="color:${feeClr}">${feeTxt}</span><div style="font-size:12px; color:#999; margin-top:4px;">👥 ${l[6] || ''}</div></div>`;
         });
-
-        document.getElementById('m-body').innerHTML = `
-            <h1 style="color:var(--primary); font-size:32px; margin:0;">${nick}</h1>
-            <p style="font-size:16px; color:#fff; margin:15px 0; border-left:4px solid var(--accent); padding-left:15px;">${p.full || '-'}</p>
-            <p style="color:var(--dim)">ที่ปรึกษา: ${p.company || '-'}</p>
-            <hr style="border-color:#222; margin:20px 0;">
-            <div style="font-size:16px; color:var(--primary); margin-bottom:15px; font-weight:600;">📑 รายละเอียดเบี้ยประชุมและประวัติ:</div>
-            ${ledgerH}
-            <a href="${p.link}" target="_blank" style="display:inline-block; margin-top:20px; color:var(--blue); font-weight:600;">📄 เอกสารโครงการ</a>`;
+        document.getElementById('m-body').innerHTML = `<h1 style="color:var(--primary); font-size:32px; margin:0;">${nick}</h1><p style="font-size:16px; color:#fff; margin:15px 0; border-left:4px solid var(--accent); padding-left:15px;">${p.full || '-'}</p><p style="color:var(--dim)">ที่ปรึกษา: ${p.company || '-'}</p><hr style="border-color:#222; margin:20px 0;"><div style="font-size:16px; color:var(--primary); margin-bottom:15px; font-weight:600;">📑 ประวัติการประชุมและเบี้ย:</div>${ledgerH}<a href="${p.link}" target="_blank" style="display:inline-block; margin-top:20px; color:var(--blue); font-weight:600;">📄 เอกสารโครงการ</a>`;
         document.getElementById('modal').style.display = 'block';
     }
 
@@ -193,7 +179,7 @@
     function initCal() {
         const ev = db.logs.map(l => {
             const d = parseDate(l[4]);
-            return d ? { title: `${l[5]} - ${l[3]}`, start: d.toISOString().split('T')[0], textColor: TYPE_MAP[l[1]] || '#eee' } : null;
+            return d ? { title: `${l[5]} - ${l[3]}`, start: d.toISOString().split('T')[0], color: TYPE_MAP[l[1]] || '#444' } : null;
         }).filter(e => e);
         new FullCalendar.Calendar(document.getElementById('calendar'), { initialView: 'dayGridMonth', events: ev, locale: 'th', height: 650 }).render();
     }

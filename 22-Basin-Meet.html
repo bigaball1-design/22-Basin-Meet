@@ -3,33 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Empire Basin 2.2 | stable</title>
+    <title>Empire Basin 2.3 | Live</title>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
     <style>
-        :root { --bg: #070707; --card: #111; --text: #eee; --dim: #888; --up: #00ff88; --down: #ff3344; --accent: #3498db; --orange: #ffa500; --border: #222; }
+        :root { --bg: #070707; --card: #111; --text: #eee; --dim: #888; --up: #00ff88; --accent: #3498db; --orange: #ffa500; --border: #222; }
         body { font-family: 'Kanit', sans-serif; background: var(--bg); margin: 0; color: var(--text); overflow-x: hidden; }
         .nav-bar { display: flex; background: #000; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
-        .nav-item { padding: 18px 25px; cursor: pointer; color: var(--dim); border-bottom: 3px solid transparent; text-transform: uppercase; font-size: 14px; font-weight: 600; }
+        .nav-item { padding: 18px 25px; cursor: pointer; color: var(--dim); border-bottom: 3px solid transparent; font-size: 14px; font-weight: 600; text-transform: uppercase; }
         .nav-item.active { border-color: var(--up); color: var(--up); background: rgba(0,255,136,0.05); }
-        .container { padding: 25px; max-width: 1400px; margin: 0 auto; }
+        .container { padding: 25px; max-width: 1200px; margin: 0 auto; }
         .tab-content { display: none; } .tab-content.active { display: block; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
         .basin-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 25px; cursor: pointer; transition: 0.2s; }
-        .basin-card:hover { border-color: var(--up); transform: translateY(-3px); }
         .basin-card h2 { font-size: 28px; color: var(--up); margin: 0 0 10px 0; font-family: 'JetBrains Mono'; }
         .status-tag { font-size: 14px; padding: 4px 10px; border-radius: 4px; display: inline-block; margin-top: 5px; font-weight: 600; border: 1px solid; }
-        .st-up { color: var(--orange); border-color: var(--orange); background: rgba(255,165,0,0.05); }
-        .st-done { color: var(--up); border-color: var(--up); background: rgba(0,255,136,0.05); }
-        .progress-row { margin-bottom: 20px; padding: 15px; background: var(--card); border-radius: 8px; border: 1px solid var(--border); }
+        .st-up { color: var(--orange); border-color: var(--orange); }
+        .st-done { color: var(--up); border-color: var(--up); }
         .bar-bg { height: 12px; background: #222; border-radius: 6px; overflow: hidden; margin: 10px 0; }
-        .bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--up)); transition: 1s ease-out; }
+        .bar-fill { height: 100%; background: var(--up); transition: 1s; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; padding: 20px; overflow-y: auto; }
         .modal-content { background: var(--card); max-width: 800px; margin: 20px auto; padding: 35px; border-radius: 15px; border: 1px solid var(--border); }
-        .history-item { border-left: 2px solid var(--border); padding-left: 20px; position: relative; margin-bottom: 25px; }
-        .history-item::before { content: ''; width: 10px; height: 10px; background: var(--accent); position: absolute; left: -6px; top: 5px; border-radius: 50%; }
-        .btn-pay { background: var(--up); color: #000; border: none; padding: 6px 15px; border-radius: 4px; cursor: pointer; font-weight: 700; margin-top: 10px; }
-        #calendar { background: #000; padding: 20px; border-radius: 12px; border: 1px solid var(--border); color: #fff; }
+        #calendar { background: #000; padding: 15px; border-radius: 10px; border: 1px solid var(--border); }
     </style>
 </head>
 <body>
@@ -38,13 +33,11 @@
         <div class="nav-item" onclick="switchTab('progress', this)">Progress Tracker</div>
         <div class="nav-item" onclick="switchTab('cal', this)">Calendar</div>
     </div>
-
     <div class="container">
         <div id="tab-main" class="tab-content active"><div id="main-grid" class="grid"></div></div>
-        <div id="tab-progress" class="tab-content"><h1 style="color:var(--up)">22 Basin Progress Analysis</h1><div id="p-list"></div></div>
+        <div id="tab-progress" class="tab-content"><h1 style="color:var(--up)">Progress Analysis</h1><div id="p-list"></div></div>
         <div id="tab-cal" class="tab-content"><div id="calendar"></div></div>
     </div>
-
     <div id="modal" class="modal" onclick="this.style.display='none'"><div class="modal-content" onclick="event.stopPropagation()" id="m-body"></div></div>
 
 <script>
@@ -54,30 +47,25 @@
     let db = { profiles: {}, logs: [] };
 
     function parseDate(dStr) {
-        if(!dStr || dStr.trim() === "") return null;
+        if(!dStr) return null;
         let d = dStr.trim();
         if(d.includes('/')) {
             const p = d.split('/');
             if(p.length === 3) return new Date(`${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`);
         }
-        const attempt = new Date(d);
-        return isNaN(attempt.getTime()) ? null : attempt;
+        return isNaN(new Date(d).getTime()) ? null : new Date(d);
     }
 
     async function loadData() {
         try {
-            const [pRes, lRes] = await Promise.all([
-                fetch(PROF_URL).then(r => r.text()),
-                fetch(LOG_URL).then(r => r.text())
-            ]);
-
-            pRes.split('\n').forEach((r, i) => {
-                if(i === 0) return;
+            const [pRes, lRes] = await Promise.all([fetch(PROF_URL), fetch(LOG_URL)]);
+            const pTxt = await pRes.text();
+            pTxt.split('\n').slice(1).forEach(r => {
                 const c = r.split(',').map(s => s.trim());
                 if(c[0]) db.profiles[c[0]] = { fullName: c[1]||'', company: c[2]||'', staff: c[3]||'', link: c[4]||'#' };
             });
-
-            db.logs = lRes.split('\n').map(r => r.split(',').map(s => s.trim())).filter((c, i) => i > 0 && c[0]);
+            const lTxt = await lRes.text();
+            db.logs = lTxt.split('\n').slice(1).map(r => r.split(',').map(s => s.trim())).filter(c => c[0]);
             render();
         } catch(e) { console.error("Sync Error", e); }
     }
@@ -89,8 +77,8 @@
         
         const sorted = basins.map(name => {
             const bLogs = db.logs.filter(l => l[0] === name).map(l => ({...l, dt: parseDate(l[2])}));
-            const validLogs = bLogs.filter(l => l.dt !== null).sort((a,b) => a.dt - b.dt);
-            const next = validLogs.find(l => l.dt > now) || validLogs[validLogs.length-1];
+            const valid = bLogs.filter(l => l.dt !== null).sort((a,b) => a.dt - b.dt);
+            const next = valid.find(l => l.dt > now) || valid[valid.length-1];
             return { name, next };
         }).sort((a,b) => (a.next?.dt || 0) - (b.next?.dt || 0));
 
@@ -102,7 +90,6 @@
                 <div class="status-tag ${isDone?'st-done':'st-up'}">
                     ${isDone ? '● การประชุมเสร็จสิ้น' : '● นัดหมาย: ' + b.next[2] + ' | ' + b.next[3]}
                 </div>
-                <p style="color:var(--dim); font-size:14px; margin-top:10px;">ล่าสุด: ${b.next[1]}</p>
             </div>`;
         });
 
@@ -111,41 +98,22 @@
         Object.keys(db.profiles).forEach(name => {
             const bLogs = db.logs.filter(l => l[0] === name);
             let max = 0; bLogs.forEach(l => { const i = STEPS.indexOf(l[1]); if(i >= max) max = i + 1; });
-            plist.innerHTML += `<div class="progress-row">
-                <div style="display:flex; justify-content:space-between;"><b style="color:var(--up); font-size:18px;">${name}</b><span style="color:var(--dim)">${max}/6 Steps</span></div>
+            plist.innerHTML += `<div style="margin-bottom:20px; padding:15px; background:var(--card); border-radius:8px; border:1px solid var(--border);">
+                <div style="display:flex; justify-content:space-between;"><b style="color:var(--up)">${name}</b><span>${max}/6 Steps</span></div>
                 <div class="bar-bg"><div class="bar-fill" style="width:${(max/6)*100}%"></div></div>
-                <div style="font-size:14px; color:var(--accent)">Stage: ${STEPS[max-1] || 'ยังไม่มีความคืบหน้า'}</div>
             </div>`;
         });
     }
 
     function openDetails(name) {
-        const p = db.profiles[name] || { fullName: name, company: '-', staff: '', link: '#' };
+        const p = db.profiles[name] || {};
         const bLogs = db.logs.filter(l => l[0] === name).reverse();
-        let html = `<h1 style="color:var(--up); font-size:32px; margin-bottom:10px;">${name}</h1>
-                    <p style="font-size:18px; color:var(--text); margin-bottom:5px;">${p.fullName}</p>
-                    <p style="color:var(--accent); margin-bottom:15px;">ที่ปรึกษา: ${p.company}</p>
-                    <a href="${p.link}" target="_blank" style="color:var(--accent); font-weight:600;">📄 เอกสารโครงการ</a><hr style="border:1px solid #222; margin:25px 0;">`;
-        
+        let html = `<h1 style="color:var(--up); font-size:32px;">${name}</h1><p>${p.fullName || ''}</p><p style="color:var(--accent)">ที่ปรึกษา: ${p.company || '-'}</p><hr style="border:1px solid #222; margin:20px 0;">`;
         bLogs.forEach(l => {
-            const feeVal = l[6] ? parseFloat(l[6].replace(/[^0-9.]/g,'')) : null;
-            const staff = l[5] || p.staff || "";
-            const sList = staff.split(';').map(s => s.trim()).filter(s => s);
-            const hasC = sList.some(s => s.includes("กลาง"));
-            
-            let txt, clr = 'var(--orange)';
-            if(feeVal === 0) { txt = "ไม่มีเบี้ยประชุม"; clr = "var(--dim)"; }
-            else if(!l[6] || l[6].trim() === "") { txt = "รอรับเบี้ย"; clr = "var(--orange)"; }
-            else { 
-                const pf = hasC ? (feeVal*0.5)/(sList.length-1) : feeVal/sList.length; 
-                txt = '฿' + (pf || 0).toLocaleString(undefined, {maximumFractionDigits:0}) + ' / คน'; clr = "var(--up)"; 
-            }
-
-            html += `<div class="history-item">
-                <div style="font-size:18px; font-weight:600; color:#fff;">${l[1]} <small style="color:var(--dim)">(${l[2]})</small></div>
-                <div style="color:${clr}; font-weight:600; font-size:18px; margin:5px 0;">${txt} ${hasC?'<small>(หักกลาง)</small>':''}</div>
-                <div style="font-size:14px; color:var(--dim)">ผู้รับผิดชอบ: ${staff}</div>
-                ${feeVal > 0 ? `<button class="btn-pay" onclick="this.innerText='ชำระแล้ว'; this.style.opacity='0.5'; event.stopPropagation();">จ่ายแล้ว</button>` : ''}
+            const fee = l[6] ? parseFloat(l[6].replace(/[^0-9.]/g,'')) : null;
+            let txt = fee === 0 ? "ไม่มีเบี้ยประชุม" : (fee === null ? "รอรับเบี้ย" : "฿" + (fee/2).toLocaleString() + " / คน (ประมาณ)");
+            html += `<div style="border-left:2px solid var(--border); padding-left:15px; margin-bottom:20px;">
+                <b>${l[1]}</b> (${l[2]})<br><span style="color:var(--orange)">${txt}</span>
             </div>`;
         });
         document.getElementById('m-body').innerHTML = html;

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Empire Basin 2.9 | Executive Suite</title>
+    <title>Empire Basin 3.0 | Executive Final</title>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
     <style>
@@ -32,7 +32,8 @@
         
         .type-badge { position: absolute; top: 15px; right: 15px; padding: 3px 10px; border-radius: 4px; font-size: 10px; font-weight: 700; color: #000; }
         .fee-info { margin: 15px 0; font-size: 18px; font-weight: 700; font-family: 'JetBrains Mono'; color: var(--orange); }
-        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 6px; font-weight: 700; border: 1px solid; margin-top: 5px; }
+        .staff-info { font-size: 12px; color: var(--dim); margin-top: 5px; }
+        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 6px; font-weight: 700; border: 1px solid; margin-top: 10px; }
         .st-up { color: var(--orange); border-color: var(--orange); }
         .st-done { color: var(--green); border-color: var(--green); }
 
@@ -44,7 +45,13 @@
 
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; padding: 20px; overflow-y: auto; }
         .modal-content { background: var(--card); max-width: 800px; margin: 20px auto; padding: 40px; border-radius: 15px; border: 1px solid var(--border); }
-        #calendar { background: #000; padding: 15px; border-radius: 12px; border: 1px solid var(--border); }
+        .history-item { border-left: 2px solid var(--border); padding-left: 15px; margin-bottom: 20px; }
+        
+        /* Calendar UI - จุดสี */
+        #calendar { background: #000; padding: 15px; border-radius: 12px; border: 1px solid var(--border); color: #fff; }
+        .fc-daygrid-event { background: transparent !important; border: none !important; color: #fff !important; }
+        .fc-event-title::before { content: '●'; margin-right: 5px; font-size: 12px; }
+        
         @media (max-width: 1000px) { .p-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -113,11 +120,13 @@
 
         basinAgg.forEach(b => {
             const isDone = b.next.dt < now;
-            const fee = b.next[7] === "" ? "รอรับเบี้ย" : (parseFloat(b.next[7]) === 0 ? "ไม่มีเบี้ย" : "฿" + parseFloat(b.next[7]).toLocaleString());
+            const rawFee = b.next[7].replace(/,/g, '');
+            const fee = b.next[7] === "" ? "รอรับเบี้ย" : (parseFloat(rawFee) === 0 ? "ไม่มีเบี้ย" : "฿" + parseFloat(rawFee).toLocaleString());
             const card = `<div class="basin-card" onclick="openSummary('${b.nick}')">
                 <span class="type-badge" style="background:${TYPE_MAP[b.next[1]] || '#444'}">${b.next[1]}</span>
                 <h2>${b.nick}</h2><div style="font-size:16px;">🗓 ${b.next[4]} | ⏰ ${b.next[5]}</div>
                 <div class="fee-info">${fee}</div>
+                <div class="staff-info">👥 ${b.next[6] || 'ไม่ระบุ'}</div>
                 <div class="status-badge ${isDone?'st-done':'st-up'}">${isDone?'เสร็จสิ้น':'กำลังมาถึง'}</div></div>`;
             isDone ? doneG.innerHTML += card : upG.innerHTML += card;
         });
@@ -134,14 +143,24 @@
 
     function openSummary(nick) {
         const p = db.profiles[nick] || {};
-        const logs = db.logs.filter(l => l[3] === nick);
-        const lastFee = [...logs].reverse().find(l => l[7] !== "") || {7:""};
-        const feeD = lastFee[7] === "" ? "รอรับเบี้ย" : (parseFloat(lastFee[7]) === 0 ? "ไม่มีเบี้ย" : "฿" + parseFloat(lastFee[7]).toLocaleString());
+        const logs = db.logs.filter(l => l[3] === nick).reverse();
+        const lastFeeLog = [...logs].find(l => l[7] !== "") || {7:""};
+        const rawF = lastFeeLog[7].replace(/,/g, '');
+        const feeD = lastFeeLog[7] === "" ? "รอรับเบี้ย" : (parseFloat(rawF) === 0 ? "ไม่มีเบี้ย" : "฿" + parseFloat(rawF).toLocaleString());
+        
+        let historyH = '';
+        logs.forEach(l => {
+            historyH += `<div class="history-item"><b>${l[1]}</b> (${l[4]})<br><small style="color:var(--dim)">${l[6] || ''}</small></div>`;
+        });
+
         document.getElementById('m-body').innerHTML = `
             <h1 style="color:var(--primary); font-size:32px; margin:0;">${nick}</h1>
             <p style="font-size:16px; color:#fff; margin:15px 0;">${p.full || '-'}</p>
             <p style="color:var(--dim)">ที่ปรึกษา: ${p.company || '-'}</p>
-            <div style="font-size:24px; color:var(--orange); font-family:JetBrains Mono; margin-top:20px;">เบี้ยล่าสุด: ${feeD}</div>
+            <div style="font-size:24px; color:var(--orange); font-family:JetBrains Mono; margin-top:10px;">เบี้ยล่าสุด: ${feeD}</div>
+            <hr style="border-color:#222; margin:20px 0;">
+            <div style="font-size:14px; color:var(--primary); margin-bottom:10px;">📜 ประวัติการประชุม:</div>
+            ${historyH}
             <a href="${p.link}" target="_blank" style="display:inline-block; margin-top:20px; color:var(--blue); font-weight:600;">📄 เอกสารโครงการ</a>`;
         document.getElementById('modal').style.display = 'block';
     }
@@ -156,9 +175,12 @@
     function initCal() {
         const ev = db.logs.map(l => {
             const d = parseDate(l[4]);
-            return d ? { title: `${l[5]} - ${l[3]}`, start: d.toISOString().split('T')[0], color: TYPE_MAP[l[1]] || '#444' } : null;
+            const color = TYPE_MAP[l[1]] || '#444';
+            return d ? { title: `${l[5]} - ${l[3]}`, start: d.toISOString().split('T')[0], textColor: color } : null;
         }).filter(e => e);
-        new FullCalendar.Calendar(document.getElementById('calendar'), { initialView: 'dayGridMonth', events: ev, locale: 'th', height: 650 }).render();
+        new FullCalendar.Calendar(document.getElementById('calendar'), { 
+            initialView: 'dayGridMonth', events: ev, locale: 'th', height: 650
+        }).render();
     }
     start();
 </script>

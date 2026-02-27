@@ -21,7 +21,7 @@
 
         .legend { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; background: #111; padding: 12px; border-radius: 8px; border: 1px solid var(--border); }
         .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; }
-        .dot { width: 10px; height: 10px; border-radius: 2px; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
 
         .section-header { font-size: 22px; color: var(--primary); margin: 30px 0 15px 0; border-left: 4px solid var(--primary); padding-left: 15px; }
 
@@ -47,9 +47,10 @@
         .history-item { border-left: 2px solid var(--border); padding-left: 20px; position: relative; margin-bottom: 25px; }
         .fee-ledger { font-family: 'JetBrains Mono'; font-size: 18px; font-weight: 700; margin-top: 8px; display: block; }
         
+        /* Calendar UI - จุดสี */
         #calendar { background: #000; padding: 15px; border-radius: 12px; border: 1px solid var(--border); color: #fff; }
-        .fc-event { border: none !important; border-radius: 4px !important; padding: 2px 4px !important; }
-        .fc-event-title { font-weight: 600 !important; color: #000 !important; }
+        .fc-daygrid-event { background: transparent !important; border: none !important; color: #fff !important; }
+        .fc-event-title::before { content: '●'; margin-right: 5px; font-size: 10px; }
 
         @media (max-width: 1000px) { .p-grid { grid-template-columns: 1fr; } }
     </style>
@@ -181,7 +182,9 @@
             const d = parseDate(l[4]);
             return d ? { title: `${l[5]} - ${l[3]}`, start: d.toISOString().split('T')[0], color: TYPE_MAP[l[1]] || '#444' } : null;
         }).filter(e => e);
-        new FullCalendar.Calendar(document.getElementById('calendar'), { initialView: 'dayGridMonth', events: ev, locale: 'th', height: 650 }).render();
+        new FullCalendar.Calendar(document.getElementById('calendar'), { 
+            initialView: 'dayGridMonth', events: ev, locale: 'th', height: 650
+        }).render();
     }
     start();
 </script>

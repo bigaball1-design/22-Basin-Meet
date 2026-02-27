@@ -81,11 +81,11 @@
     const PROF_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5hALcSBPp06GcYUqubUzlQM6_spndAbjd4nuhA9ekKFGkA8gldNXj1frx3gjn-6Tg0eS-HuAI9bUw/pub?gid=1235957743&single=true&output=csv';
     
     const TYPE_MAP = {
-        "Inception": "var(--blue)", "Progress Report 1": "var(--blue)", "Progress Report 2": "var(--blue)",
-        "Interim Report": "var(--blue)", "Draft Final": "var(--accent)", "Final": "var(--accent)",
+        "Inception": "var(--blue)", "Progress 1": "var(--blue)", "Progress 2": "var(--blue)",
+        "Interim": "var(--blue)", "Draft Final": "var(--accent)", "Final": "var(--accent)",
         "เวทีปฐมนิเทศ": "var(--green)", "เวทีกลุ่มย่อย": "var(--orange)", "เวทีปัจฉิมนิเทศ": "var(--pink)"
     };
-    const STEPS = ["Inception", "Progress Report 1", "Progress Report 2", "Interim Report", "Draft Final", "Final"];
+    const STEPS = ["Inception", "Progress 1", "Progress 2", "Interim", "Draft Final", "Final"];
     let db = { profiles: {}, logs: [] };
 
     function parseDate(dStr) {
@@ -190,3 +190,4 @@
 </script>
 </body>
 </html>
+

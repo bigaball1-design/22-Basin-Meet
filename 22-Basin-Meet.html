@@ -3,346 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Empire Basin 2.4 | Executive View</title>
+    <title>Empire Basin 2.5 | Executive Grid</title>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
     <style>
-        :root { 
-            --bg: #121212; /* Darker grey background for better contrast with pastel */
-            --card: #1e1e1e; 
-            --text: #e0e0e0; 
-            --dim: #a0a0a0; 
-            --primary: #a7ffeb; /* Pastel Teal */
-            --accent: #b39ddb; /* Pastel Purple */
-            --orange: #ffcc80; /* Pastel Orange */
-            --border: #333; 
-            --up: #a7ffeb; /* Use pastel teal for "up" status */
-        }
-        body { font-family: 'Kanit', sans-serif; background: var(--bg); margin: 0; color: var(--text); overflow-x: hidden; font-size: 14px; }
-        
-        /* Navigation Tabs */
+        :root { --bg: #0a0a0a; --card: #151515; --text: #d1d1d1; --primary: #80cbc4; --accent: #ce93d8; --border: #222; }
+        body { font-family: 'Kanit', sans-serif; background: var(--bg); margin: 0; color: var(--text); font-size: 13px; }
         .nav-bar { display: flex; background: #000; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
-        .nav-item { padding: 15px 20px; cursor: pointer; color: var(--dim); border-bottom: 3px solid transparent; text-transform: uppercase; font-size: 13px; font-weight: 600; }
-        .nav-item.active { border-color: var(--primary); color: var(--primary); background: rgba(167, 255, 235, 0.05); }
+        .nav-item { padding: 12px 20px; cursor: pointer; color: #666; border-bottom: 3px solid transparent; font-size: 12px; font-weight: 600; }
+        .nav-item.active { border-color: var(--primary); color: var(--primary); background: rgba(128,203,196,0.05); }
+        .container { padding: 15px; max-width: 1600px; margin: 0 auto; }
+        .tab-content { display: none; } .tab-content.active { display: block; }
 
-        .container { padding: 20px; max-width: 1600px; margin: 0 auto; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+        /* หน้าแรก Grid 3 แถว */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+        .basin-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 15px; cursor: pointer; }
+        .basin-card h2 { font-size: 20px; color: var(--primary); margin: 0 0 8px 0; }
 
-        /* Main Grid & Cards - Reduced size slightly */
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; }
-        .basin-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; cursor: pointer; transition: 0.2s; }
-        .basin-card:hover { border-color: var(--primary); transform: translateY(-3px); }
-        .basin-card h2 { font-size: 24px; color: var(--primary); margin: 0 0 10px 0; font-family: 'JetBrains Mono'; }
-        .basin-card p { margin: 5px 0; color: var(--dim); font-size: 14px; }
-        
-        /* Status Tags - Pastel colors */
-        .status-tag { font-size: 12px; padding: 3px 8px; border-radius: 4px; display: inline-block; margin-top: 5px; font-weight: 600; border: 1px solid; }
-        .st-up { color: var(--orange); border-color: var(--orange); background: rgba(255, 204, 128, 0.05); }
-        .st-done { color: var(--primary); border-color: var(--primary); background: rgba(167, 255, 235, 0.05); }
-        
-        /* Progress Tracker - Compact Executive View */
-        .progress-list { display: flex; flex-direction: column; gap: 10px; }
-        .progress-row { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 15px; display: grid; grid-template-columns: 200px 1fr 100px; align-items: center; gap: 15px; }
-        .progress-row b { font-size: 14px; color: var(--primary); }
-        .progress-row .stage-text { font-size: 12px; color: var(--accent); }
-        .progress-row .step-count { font-size: 12px; color: var(--dim); text-align: right; }
-        .bar-container { height: 8px; background: #222; border-radius: 4px; overflow: hidden; position: relative; }
-        .bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--primary)); transition: 1s ease-out; }
+        /* หน้า Progress เป็น 2 คอลัมน์ (ลดการ Scroll) */
+        .progress-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .p-row { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; display: flex; align-items: center; gap: 10px; }
+        .p-name { width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; color: var(--primary); }
+        .bar-bg { flex-grow: 1; height: 6px; background: #222; border-radius: 3px; overflow: hidden; }
+        .bar-fill { height: 100%; background: var(--accent); transition: 1s; }
+        .p-step { font-size: 10px; color: #666; width: 45px; text-align: right; }
 
-        /* Modal History */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; padding: 20px; overflow-y: auto; }
-        .modal-content { background: var(--card); max-width: 800px; margin: 30px auto; padding: 30px; border-radius: 12px; border: 1px solid var(--border); }
-        .history-item { border-left: 2px solid var(--border); padding-left: 20px; position: relative; margin-bottom: 20px; }
-        .history-item::before { content: ''; width: 10px; height: 10px; background: var(--accent); position: absolute; left: -6px; top: 5px; border-radius: 50%; }
+        /* Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; padding: 15px; }
+        .modal-content { background: var(--card); max-width: 700px; margin: 20px auto; padding: 25px; border-radius: 10px; border: 1px solid var(--border); }
 
-        /* Calendar - Pastel Orange for events */
-        #calendar { background: #000; padding: 15px; border-radius: 10px; border: 1px solid var(--border); color: #fff; font-size: 13px; }
-        .fc-event { border: none !important; }
+        #calendar { background: #000; padding: 10px; border-radius: 8px; border: 1px solid var(--border); }
+        @media (max-width: 900px) { .progress-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
-
     <div class="nav-bar">
         <div class="nav-item active" onclick="switchTab('main', this)">Basin Console</div>
-        <div class="nav-item" onclick="switchTab('progress', this)">Progress Tracker</div>
-        <div class="nav-item" onclick="switchTab('cal', this)">Calendar</div>
+        <div class="nav-item" onclick="switchTab('progress', this)">Progress Analysis</div>
+        <div class="nav-item" onclick="switchTab('cal', this)">Calendar View</div>
     </div>
-
     <div class="container">
-        <div id="tab-main" class="tab-content active">
-            <div id="main-grid" class="grid">
-                </div>
-        </div>
-
-        <div id="tab-progress" class="tab-content">
-            <h1 style="color:var(--primary); font-size: 24px; margin-bottom: 15px;">22 Basin Progress - Executive Summary</h1>
-            <div id="p-list" class="progress-list">
-                </div>
-        </div>
-
-        <div id="tab-cal" class="tab-content">
-            <div id="calendar"></div>
-        </div>
+        <div id="tab-main" class="tab-content active"><div id="main-grid" class="grid"></div></div>
+        <div id="tab-progress" class="tab-content"><div id="p-list" class="progress-grid"></div></div>
+        <div id="tab-cal" class="tab-content"><div id="calendar"></div></div>
     </div>
-
-    <div id="modal" class="modal" onclick="this.style.display='none'">
-        <div class="modal-content" onclick="event.stopPropagation()" id="m-body">
-            </div>
-    </div>
+    <div id="modal" class="modal" onclick="this.style.display='none'"><div class="modal-content" onclick="event.stopPropagation()" id="m-body"></div></div>
 
 <script>
-    // CSV URLs (Confirm these are correct and Published as CSV)
     const LOG_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5hALcSBPp06GcYUqubUzlQM6_spndAbjd4nuhA9ekKFGkA8gldNXj1frx3gjn-6Tg0eS-HuAI9bUw/pub?gid=0&single=true&output=csv';
     const PROF_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5hALcSBPp06GcYUqubUzlQM6_spndAbjd4nuhA9ekKFGkA8gldNXj1frx3gjn-6Tg0eS-HuAI9bUw/pub?gid=1235957743&single=true&output=csv';
-
     const STEPS = ["Inception", "Progress", "Interim", "Progress 2", "Draft Final", "Final"];
     let db = { profiles: {}, logs: [] };
 
-    // Robust Date Parsing for YYYY-MM-DD
-    function parseDate(dStr) {
-        if (!dStr || dStr.trim() === "") return null;
-        const trimmedDate = dStr.trim();
-        const dateObj = new Date(trimmedDate);
+    // แปลงวันที่แบบถึกทน (รองรับ YYYY-MM-DD และ DD/MM/YYYY)
+    function safeDate(d) {
+        if (!d) return null;
+        const cleanD = d.trim();
+        let dateObj = new Date(cleanD);
+        if (isNaN(dateObj.getTime()) && cleanD.includes('/')) {
+            const [dd, mm, yyyy] = cleanD.split('/');
+            dateObj = new Date(`${yyyy}-${mm}-${dd}`);
+        }
         return isNaN(dateObj.getTime()) ? null : dateObj;
     }
 
-    async function loadData() {
-        console.log("Starting data load...");
+    async function load() {
         try {
-            const [pRes, lRes] = await Promise.all([
-                fetch(PROF_URL).then(r => {
-                    if (!r.ok) throw new Error('Profile CSV fetch failed');
-                    return r.text();
-                }),
-                fetch(LOG_URL).then(r => {
-                    if (!r.ok) throw new Error('Log CSV fetch failed');
-                    return r.text();
-                })
-            ]);
-
-            console.log("CSV data fetched successfully.");
-
-            // Parse Profiles (Sheet 2)
-            pRes.split('\n').forEach((r, i) => {
-                if (i === 0 || !r.trim()) return; // Skip header and empty rows
+            const [pRes, lRes] = await Promise.all([fetch(PROF_URL), fetch(LOG_URL)]);
+            const pTxt = await pRes.text();
+            pTxt.split('\n').forEach((r, i) => {
+                if (i === 0) return;
                 const c = r.split(',').map(s => s.trim());
-                if (c[0]) {
-                    db.profiles[c[0]] = { fullName: c[1] || '', company: c[2] || '', staff: c[3] || '', link: c[4] || '#' };
-                }
+                if (c[0]) db.profiles[c[0]] = { fullName: c[1]||c[0], company: c[2]||'-', staff: c[3]||'', link: c[4]||'#' };
             });
-            console.log(`Loaded ${Object.keys(db.profiles).length} profiles.`);
-
-            // Parse Logs (Sheet 1)
-            db.logs = lRes.split('\n')
-                .map(r => r.split(',').map(s => s.trim()))
-                .filter((c, i) => i > 0 && c[0] && c[0] !== 'ลุ่มน้ำ'); // Skip header and empty Basin names
-            console.log(`Loaded ${db.logs.length} log entries.`);
-
-            if (db.logs.length === 0) {
-                console.warn("No logs found in Sheet 1. Dashboard will be empty.");
-            }
-
-            renderDashboard();
+            const lTxt = await lRes.text();
+            db.logs = lTxt.split('\n').map(r => r.split(',').map(s => s.trim())).filter((c, i) => i > 0 && c[0]);
+            
+            renderMain();
             renderProgress();
-            // Calendar will be initialized when tab is switched to ensure proper rendering
-        } catch (e) {
-            console.error("Sync Error:", e);
-            document.getElementById('main-grid').innerHTML = `<p style="color:var(--down); padding: 20px;">Error loading data. Check console for details. Ensure CORS Unlock is ON if testing locally.</p>`;
-        }
+        } catch (e) { console.error("Load Error", e); }
     }
 
-    function renderDashboard() {
-        console.log("Rendering Dashboard...");
-        const grid = document.getElementById('main-grid');
-        grid.innerHTML = '';
-        
+    function renderMain() {
+        const grid = document.getElementById('main-grid'); grid.innerHTML = '';
         const now = new Date();
-        // Get unique Basin names that have logs
-        const basinsWithLogs = [...new Set(db.logs.map(l => l[0]))];
+        const basins = [...new Set(db.logs.map(l => l[0]))];
         
-        if (basinsWithLogs.length === 0) {
-            grid.innerHTML = '<p style="color:var(--dim); padding: 20px;">ยังไม่มีข้อมูลการประชุมในระบบ</p>';
-            return;
-        }
-
-        const sortedBasins = basinsWithLogs.map(name => {
-            const bLogs = db.logs.filter(l => l[0] === name).map(l => ({...l, dt: parseDate(l[2])}));
-            // Filter out logs with invalid dates for sorting
-            const validLogs = bLogs.filter(l => l.dt !== null).sort((a,b) => a.dt - b.dt);
-            // Find the next upcoming meeting, or the very last meeting if all are passed
-            const nextMeeting = validLogs.find(l => l.dt > now) || validLogs[validLogs.length-1];
-            return { name, nextMeeting };
-        }).sort((a,b) => {
-            // Sort basins by their next meeting date (upcoming first)
-            return (a.nextMeeting?.dt || 0) - (b.nextMeeting?.dt || 0);
+        basins.forEach(name => {
+            const bLogs = db.logs.filter(l => l[0] === name).map(l => ({...l, dt: safeDate(l[2])})).filter(l => l.dt);
+            if (bLogs.length === 0) return;
+            const next = bLogs.sort((a,b) => a.dt - b.dt).find(l => l.dt > now) || bLogs[bLogs.length-1];
+            grid.innerHTML += `<div class="basin-card" onclick="openDetails('${name}')">
+                <h2>${name}</h2>
+                <div style="font-size:11px; color:#888;">${next[1]}</div>
+                <div style="color:${next.dt > now ? '#ffcc80':'#80cbc4'}; font-size:12px; margin-top:5px;">${next[2]} | ${next[3]}</div>
+            </div>`;
         });
-
-        sortedBasins.forEach(b => {
-            if (!b.nextMeeting) return; // Should not happen with filtering above
-            const isDone = b.nextMeeting.dt <= now;
-            grid.innerHTML += `
-                <div class="basin-card" onclick="openDetails('${b.name}')">
-                    <h2>${b.name}</h2>
-                    <div class="status-tag ${isDone ? 'st-done' : 'st-up'}">
-                        ${isDone ? '● การประชุมเสร็จสิ้น' : '● นัดหมาย: ' + b.nextMeeting[2] + ' | ' + b.nextMeeting[3]}
-                    </div>
-                    <p style="margin-top:10px;">ล่าสุด: ${b.nextMeeting[1]}</p>
-                </div>`;
-        });
-        console.log("Dashboard rendered.");
     }
 
     function renderProgress() {
-        console.log("Rendering Progress Tracker...");
-        const plist = document.getElementById('p-list');
-        plist.innerHTML = '';
+        const plist = document.getElementById('p-list'); plist.innerHTML = '';
+        // ดึงรายชื่อลุ่มน้ำทั้งหมดจาก Profiles (เพื่อให้ขึ้นครบ 22 ลุ่ม)
+        const allBasins = Object.keys(db.profiles).length > 0 ? Object.keys(db.profiles) : [...new Set(db.logs.map(l => l[0]))];
         
-        // Show all 22 basins from profiles (Sheet 2)
-        const allBasins = Object.keys(db.profiles);
-        
-        if (allBasins.length === 0) {
-            plist.innerHTML = '<p style="color:var(--dim);">ยังไม่มีข้อมูลโครงการในระบบ (Sheet 2)</p>';
-            return;
-        }
-
         allBasins.forEach(name => {
             const bLogs = db.logs.filter(l => l[0] === name);
-            let maxStep = 0;
-            // Find the furthest milestone achieved
-            bLogs.forEach(l => {
-                const stepIdx = STEPS.indexOf(l[1].trim());
-                if(stepIdx >= maxStep) maxStep = stepIdx + 1;
-            });
-
-            const percent = (maxStep / STEPS.length) * 100;
-
-            plist.innerHTML += `
-                <div class="progress-row">
-                    <b>${name}</b>
-                    <div class="bar-container">
-                        <div class="bar-fill" style="width:${percent}%"></div>
-                    </div>
-                    <div class="step-count">${maxStep}/6 Steps</div>
-                </div>`;
+            let max = 0; bLogs.forEach(l => { const i = STEPS.indexOf(l[1].trim()); if(i >= max) max = i + 1; });
+            plist.innerHTML += `<div class="p-row">
+                <div class="p-name">${name}</div>
+                <div class="bar-bg"><div class="bar-fill" style="width:${(max/6)*100}%"></div></div>
+                <div class="p-step">${max}/6</div>
+            </div>`;
         });
-        console.log("Progress Tracker rendered.");
     }
 
     function openDetails(name) {
-        const p = db.profiles[name] || { fullName: name, company: '-', staff: '', link: '#' };
-        const bLogs = db.logs.filter(l => l[0] === name).reverse(); // Show latest first
-        const modal = document.getElementById('modal');
-        const body = document.getElementById('m-body');
-
-        let html = `
-            <h1 style="color:var(--primary); font-size:28px; margin-bottom: 5px;">${name}</h1>
-            <p style="font-size:16px; color:var(--text); margin-bottom: 5px;">${p.fullName}</p>
-            <p style="color:var(--accent); margin-bottom: 10px;">ที่ปรึกษา: ${p.company}</p>
-            <a href="${p.link}" target="_blank" style="color:var(--accent); font-weight:600; font-size: 14px;">📄 เอกสารโครงการหลัก</a>
-            <hr style="border:1px solid #333; margin:20px 0;">
-        `;
-        
-        if (bLogs.length === 0) {
-            html += '<p style="color:var(--dim);">ยังไม่มีประวัติการประชุม</p>';
-        } else {
-            bLogs.forEach(l => {
-                // Robust fee parsing
-                const feeVal = l[6] ? parseFloat(l[6].replace(/[^0-9.]/g,'')) : null;
-                const staff = l[5] || p.staff || "";
-                const staffList = staff.split(';').map(s => s.trim()).filter(s => s);
-                const hasCenter = staffList.some(s => s.includes("กลาง"));
-                
-                let feeText, feeColor = 'var(--orange)';
-                if(feeVal === 0) { 
-                    feeText = "ไม่มีเบี้ยประชุม"; 
-                    feeColor = "var(--dim)"; 
-                } else if(!l[6] || l[6].trim() === "") { 
-                    feeText = "รอรับเบี้ย"; 
-                    feeColor = "var(--orange)"; 
-                } else { 
-                    const pFee = hasCenter ? (feeVal * 0.5) / (staffList.length - 1) : feeVal / staffList.length; 
-                    feeText = '฿' + (pFee || 0).toLocaleString(undefined, {maximumFractionDigits:0}) + ' / คน'; 
-                    feeColor = "var(--up)"; 
-                }
-
-                html += `
-                    <div class="history-item">
-                        <div style="font-size:16px; font-weight:600; color:#fff;">${l[1]} <small style="color:var(--dim)">(${l[2]})</small></div>
-                        <div style="color:${feeColor}; font-weight:600; font-size:16px; margin:5px 0;">
-                            ${feeText} ${hasCenter ? '<small style="color:var(--dim); font-weight:400;">(หักเข้ากลาง 50%)</small>' : ''}
-                        </div>
-                        <div style="font-size:13px; color:var(--dim)">ผู้รับผิดชอบ: ${staff}</div>
-                    </div>`;
-            });
-        }
-        
-        body.innerHTML = html;
-        modal.style.display = 'block';
+        const p = db.profiles[name] || {};
+        const bLogs = db.logs.filter(l => l[0] === name).reverse();
+        let html = `<h1 style="color:var(--primary); font-size:22px;">${name}</h1><p style="font-size:14px;">${p.fullName||''}</p><hr style="border:1px solid #222">`;
+        bLogs.forEach(l => {
+            const fee = l[6] ? parseFloat(l[6].replace(/[^0-9.]/g,'')) : null;
+            html += `<div style="margin-bottom:15px; border-left:2px solid #333; padding-left:10px;">
+                <b style="font-size:14px;">${l[1]}</b> (${l[2]})<br>
+                <span style="color:${fee > 0 ? '#80cbc4':'#ffcc80'}; font-size:13px;">${fee > 0 ? '฿'+(fee/2).toLocaleString() : (fee === 0 ? 'ไม่มีเบี้ย' : 'รอรับเบี้ย')}</span>
+            </div>`;
+        });
+        document.getElementById('m-body').innerHTML = html; document.getElementById('modal').style.display = 'block';
     }
 
     function switchTab(t, el) {
-        // Hide all content
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        // Deactivate all nav items
         document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-        
-        // Show selected content and activate nav item
-        document.getElementById('tab-'+t).classList.add('active');
-        el.classList.add('active');
-        
-        // Initialize calendar only when its tab is shown to ensure correct sizing
-        if(t === 'cal') {
-            setTimeout(initCalendar, 50); // Small delay to allow tab to become visible
-        }
+        document.getElementById('tab-'+t).classList.add('active'); el.classList.add('active');
+        if (t === 'cal') setTimeout(initCal, 50);
     }
 
-    let calendarInstance = null;
-    function initCalendar() {
-        console.log("Initializing Calendar...");
-        const calendarEl = document.getElementById('calendar');
-        
-        if (calendarInstance) {
-            calendarInstance.destroy(); // Destroy previous instance if it exists
-        }
-
+    function initCal() {
         const events = db.logs.map(l => {
-            const d = parseDate(l[2]);
-            if (d) {
-                return { 
-                    title: l[0], 
-                    start: d.toISOString().split('T')[0], // YYYY-MM-DD format for FullCalendar
-                    color: d < new Date() ? '#444' : '#ffcc80' // Grey for past, Pastel Orange for future
-                };
-            }
-            return null;
-        }).filter(e => e); // Remove null events
-
-        console.log(`Loaded ${events.length} events for calendar.`);
-
-        calendarInstance = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth',
-            events: events,
-            locale: 'th', // Thai language
-            height: 'auto',
-            contentHeight: 650,
-            headerToolbar: {
-                left: 'prev,next today',
-                center: 'title',
-                right: 'dayGridMonth,timeGridWeek'
-            },
-            buttonText: {
-                today: 'วันนี้',
-                month: 'เดือน',
-                week: 'สัปดาห์'
-            }
-        });
-        calendarInstance.render();
-        console.log("Calendar rendered.");
+            const d = safeDate(l[2]);
+            return d ? { title: l[0], start: d.toISOString().split('T')[0], color: d < new Date() ? '#333' : '#ce93d8' } : null;
+        }).filter(e => e);
+        new FullCalendar.Calendar(document.getElementById('calendar'), { initialView: 'daygridMonth', events, locale: 'th', height: 600 }).render();
     }
-
-    // Start loading data on page load
-    loadData();
+    load();
 </script>
 </body>
 </html>

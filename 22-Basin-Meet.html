@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Empire Basin 3.0 | Master Final</title>
+    <title>Empire Basin 3.0 | Master Stable</title>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
     <style>
         :root { 
-            --bg: #050505; --card: #121212; --text: #d1d1d1; --dim: #666;
+            --bg: #050505; --card: #121212; --text: #d1d1d1; --dim: #555;
             --primary: #80cbc4; --accent: #ce93d8; --orange: #ffcc80; --border: #222;
-            --blue: #90caf9; --green: #a5d6a7; --pink: #f48fb1; --yellow: #fff59d;
+            --blue: #90caf9; --green: #a5d6a7; --pink: #f48fb1;
         }
         body { font-family: 'Kanit', sans-serif; background: var(--bg); margin: 0; color: var(--text); font-size: 13px; }
         .nav-bar { display: flex; background: #000; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
@@ -32,7 +32,10 @@
         
         .type-badge { position: absolute; top: 15px; right: 15px; padding: 3px 10px; border-radius: 4px; font-size: 10px; font-weight: 700; color: #000; }
         .fee-info { margin: 12px 0; font-size: 18px; font-weight: 700; font-family: 'JetBrains Mono'; color: var(--orange); }
-        .staff-info { font-size: 12px; color: #ffffff; margin-bottom: 10px; }
+        
+        /* ชื่อผู้รับผิดชอบสีขาวตามสั่ง */
+        .staff-info { font-size: 12px; color: #ffffff; margin-bottom: 10px; font-weight: 400; }
+        
         .status-badge { display: inline-block; padding: 4px 12px; border-radius: 6px; font-weight: 700; border: 1px solid; margin-top: 5px; }
         .st-up { color: var(--orange); border-color: var(--orange); }
         .st-done { color: var(--green); border-color: var(--green); }
@@ -47,7 +50,7 @@
         .history-item { border-left: 2px solid var(--border); padding-left: 20px; position: relative; margin-bottom: 25px; }
         .fee-ledger { font-family: 'JetBrains Mono'; font-size: 18px; font-weight: 700; margin-top: 8px; display: block; }
         
-        /* Calendar UI - จุดสี */
+        /* ปฏิทินจุดสี */
         #calendar { background: #000; padding: 15px; border-radius: 12px; border: 1px solid var(--border); color: #fff; }
         .fc-daygrid-event { background: transparent !important; border: none !important; color: #fff !important; }
         .fc-event-title::before { content: '●'; margin-right: 5px; font-size: 10px; }
@@ -66,7 +69,7 @@
         <div id="tab-main" class="tab-content active">
             <div class="section-header">🚩 กำลังมาถึง (Upcoming)</div><div id="grid-up" class="grid"></div>
             <div style="margin: 50px 0; border-top: 1px dashed #333;"></div>
-            <div class="section-header">✅ เสร็จสิ้นแล้ว (History)</div><div id="grid-done" class="grid" style="opacity: 0.6;"></div>
+            <div class="section-header">✅ เสร็จสิ้นแล้ว (30 วันย้อนหลัง)</div><div id="grid-done" class="grid" style="opacity: 0.6;"></div>
         </div>
         <div id="tab-progress" class="tab-content"><div id="p-list" class="p-grid"></div></div>
         <div id="tab-cal" class="tab-content"><div id="calendar"></div></div>
@@ -78,15 +81,9 @@
     const PROF_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5hALcSBPp06GcYUqubUzlQM6_spndAbjd4nuhA9ekKFGkA8gldNXj1frx3gjn-6Tg0eS-HuAI9bUw/pub?gid=1235957743&single=true&output=csv';
     
     const TYPE_MAP = {
-        "Inception": "var(--blue)",
-        "Progress Report 1": "var(--blue)",
-        "Progress Report 2": "var(--blue)",
-        "Interim Report": "var(--blue)",
-        "Draft Final": "var(--accent)",
-        "Final": "var(--accent)",
-        "เวทีปฐมนิเทศ": "var(--green)",
-        "เวทีกลุ่มย่อย": "var(--orange)",
-        "เวทีปัจฉิมนิเทศ": "var(--pink)"
+        "Inception": "var(--blue)", "Progress Report 1": "var(--blue)", "Progress Report 2": "var(--blue)",
+        "Interim Report": "var(--blue)", "Draft Final": "var(--accent)", "Final": "var(--accent)",
+        "เวทีปฐมนิเทศ": "var(--green)", "เวทีกลุ่มย่อย": "var(--orange)", "เวทีปัจฉิมนิเทศ": "var(--pink)"
     };
     const STEPS = ["Inception", "Progress Report 1", "Progress Report 2", "Interim Report", "Draft Final", "Final"];
     let db = { profiles: {}, logs: [] };
@@ -121,6 +118,8 @@
 
     function render() {
         const now = new Date(); now.setHours(0,0,0,0);
+        const thirtyDaysAgo = new Date(); thirtyDaysAgo.setDate(now.getDate() - 30);
+        
         const upG = document.getElementById('grid-up'); const doneG = document.getElementById('grid-done');
         upG.innerHTML = ''; doneG.innerHTML = '';
 
@@ -133,28 +132,10 @@
         }).sort((a,b) => (a.next?.dt || 0) - (b.next?.dt || 0));
 
         basinAgg.forEach(b => {
-            // 1. เพิ่มบรรทัดคำนวณ 30 วันย้อนหลังไว้ตรงนี้
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(now.getDate() - 30);
-
-        basinAgg.forEach(b => {
             const isDone = b.next.dt < now;
-
-            // 2. เพิ่มเงื่อนไข Filter: ถ้าจบแล้วและเก่าเกิน 30 วัน ให้ข้ามไปเลย
+            // กรอง 30 วัน
             if (isDone && b.next.dt < thirtyDaysAgo) return;
 
-            const rawFee = b.next[7].replace(/,/g, '');
-            const feeTxt = b.next[7] === "" ? "รอรับเบี้ย" : (parseFloat(rawFee) === 0 ? "ไม่มีเบี้ย" : "฿" + parseFloat(rawFee).toLocaleString());
-            
-            const card = `<div class="basin-card" onclick="openSummary('${b.nick}')">
-                <span class="type-badge" style="background:${TYPE_MAP[b.next[1]] || '#444'}">${b.next[1]}</span>
-                <h2>${b.nick}</h2><div style="font-size:16px;">🗓 ${b.next[4]} | ⏰ ${b.next[5]}</div>
-                <div class="fee-info">เบี้ยรอบนี้: ${feeTxt}</div>
-                <div class="staff-info">👥 ผู้รับผิดชอบ: ${b.next[6] || 'ไม่ระบุ'}</div>
-                <div class="status-badge ${isDone?'st-done':'st-up'}">${isDone?'เสร็จสิ้น':'กำลังมาถึง'}</div></div>`;
-            
-            isDone ? doneG.innerHTML += card : upG.innerHTML += card;
-        });
             const rawFee = b.next[7].replace(/,/g, '');
             const feeTxt = b.next[7] === "" ? "รอรับเบี้ย" : (parseFloat(rawFee) === 0 ? "ไม่มีเบี้ย" : "฿" + parseFloat(rawFee).toLocaleString());
             
@@ -201,14 +182,11 @@
     function initCal() {
         const ev = db.logs.map(l => {
             const d = parseDate(l[4]);
-            return d ? { title: `${l[5]} - ${l[3]}`, start: d.toISOString().split('T')[0], color: TYPE_MAP[l[1]] || '#444' } : null;
+            return d ? { title: `${l[5]} - ${l[3]}`, start: d.toISOString().split('T')[0], textColor: TYPE_MAP[l[1]] || '#eee' } : null;
         }).filter(e => e);
-        new FullCalendar.Calendar(document.getElementById('calendar'), { 
-            initialView: 'dayGridMonth', events: ev, locale: 'th', height: 650
-        }).render();
+        new FullCalendar.Calendar(document.getElementById('calendar'), { initialView: 'dayGridMonth', events: ev, locale: 'th', height: 650 }).render();
     }
     start();
 </script>
 </body>
 </html>
-
